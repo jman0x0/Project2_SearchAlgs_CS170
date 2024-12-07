@@ -3,6 +3,11 @@
 #include <vector>
 #include <iomanip>
 #include <set>
+#include <fstream>
+#include <sstream>
+#include "Instance.h"
+#include "NearestNeighbor.h"
+#include "Validator.h"
 
 struct Feature {
 	float accuracy;
@@ -16,15 +21,9 @@ struct Model {
 	float accuracy;
 
 	Model() : accuracy(-std::numeric_limits<float>::max()) {
-		
+
 	}
 };
-
-template<typename T>
-void eraseFast(T& container, std::size_t idx) {
-	std::swap(container[idx], container.back());
-	container.pop_back();
-}
 
 float randomEvaluation(const FeatureSet& features) {
 	static std::mt19937 generator(std::random_device{}());
@@ -59,10 +58,10 @@ Model greedyForwardSelection(FeatureSet features) {
 			}
 			std::cout << "\tUsing features(s){";
 			printFeatures(greedy);
-			std::cout << "} accuracy is " << accuracy*100.0 << "\%\n";
+			std::cout << "} accuracy is " << accuracy * 100.0 << "\%\n";
 			greedy.pop_back();
 		}
-		
+
 		greedy.push_back(features[bestFeature]);
 		eraseFast(features, bestFeature);
 		if (bestModel > optimal.accuracy) {
@@ -126,10 +125,74 @@ FeatureSet getFeatureSet(std::size_t n) {
 	return features;
 }
 
+Instance processInstance(const std::string& data) {
+	std::istringstream processor{ data };
+
+	double tag;
+	processor >> tag;
+	double feature;
+	std::vector<double> features;
+	while (processor >> feature) {
+		features.push_back(feature);
+	}
+	return { (uint8_t)tag, std::move(features) };
+}
+
+std::vector<Instance> readInstanceFile(const std::string& pathway) {
+	std::vector<Instance> instances;
+	std::ifstream input(pathway, std::ifstream::in);
+
+	std::string line;
+	std::size_t featureCount{};
+	while (std::getline(input, line)) {
+		instances.emplace_back(processInstance(line));
+		featureCount = std::max(featureCount, instances.back().featureCount());
+	}
+	/*std::vector<std::pair<double, double>> minmaxes;
+	minmaxes.resize(featureCount, std::pair<double,double>{DBL_MAX, -DBL_MAX});
+	for (auto& instance : instances) {
+		for (std::size_t i{}; i < instance.featureCount(); ++i) {
+			minmaxes[i].first = std::min(minmaxes[i].first, instance.getFeature(i));
+			minmaxes[i].second = std::max(minmaxes[i].second, instance.getFeature(i));
+		}
+	}
+	for (auto& instance : instances) {
+		instance.normalize(minmaxes);
+	}*/
+	std::vector<std::pair<double, double>> meandevs;
+	meandevs.resize(featureCount);
+	for (auto& instance : instances) {
+		for (std::size_t i{}; i < instance.featureCount(); ++i) {
+			meandevs[i].first += instance.getFeature(i);
+		}
+	}
+	for (auto& meandev : meandevs) {
+		meandev.first /= instances.size();
+	}
+	for (auto& instance : instances) {
+		for (std::size_t i{}; i < instance.featureCount(); ++i) {
+			meandevs[i].second += pow((instance.getFeature(i) - meandevs[i].first), 2.0);
+		}
+	}
+	for (auto& meandev : meandevs) {
+		meandev.second = std::sqrt(meandev.second / instances.size());
+	}
+	for (auto& instance : instances) {
+		instance.stdNormalize(meandevs);
+	}
+	return instances;
+}
+
 int main() {
 	std::cout << "Welcome to Joshua Moreno's Feature Selection Algorithm\n" << std::endl;
 
-	std::size_t features;
+	auto instances{ readInstanceFile("large-test-dataset.txt") };
+	std::vector<std::size_t> featureSet{ { 0,14,26 } };
+
+	NearestNeighbor nn{ featureSet };
+	Validator validator;
+	std::cout << "Accuracy: " << validator.validateModel(featureSet, nn, instances);
+	/*std::size_t features;
 	std::cout << "Please enter the total number of features: ";
 	std::cin >> features;
 
@@ -143,7 +206,7 @@ int main() {
 	std::cout << std::fixed << std::setprecision(1);
 	std::cout << "\nUsing no features \"random\" evaluation, I get an accuracy of ";
 	std::cout << randomEvaluation({}) * 100.0 << "%";
-	
+
 
 	auto optimal{
 		[&]() {
@@ -158,5 +221,5 @@ int main() {
 
 	std::cout << "Finished search!! The best feature subset is {";
 	printFeatures(optimal.features);
-	std::cout << "}, which has an accuracy of " << optimal.accuracy*100.0 << "%" << std::endl;
+	std::cout << "}, which has an accuracy of " << optimal.accuracy * 100.0 << "%" << std::endl;*/
 }
