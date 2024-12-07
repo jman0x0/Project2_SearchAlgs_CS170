@@ -53,3 +53,39 @@ private:
 in other words, a previously supervised tag value and a set of continous features.
 Notably, we have a method ``stdNormalize`` to normalize an instance with respect to the population mean and standard deviation.
 
+The ``NearestNeighbor`` class inherits from ``Classifier`` and uses euclidean distance in N-dimensional space to determine the nearest neighbor. i.e.,
+```c++
+double euclideanDistance(const Instance& a, const Instance& b) {
+	double sqsum{};
+
+	for (auto& idx : featureSet) {
+		sqsum += pow(a.getFeature(idx) - b.getFeature(idx), 2.0);
+	}
+	return std::sqrt(sqsum);
+}
+```
+
+The ``Validator`` class implements Leave-One-Out Cross Validation through the method ``validateModel`` which accepts a featureset, classifier, and set of instances.
+```c++
+double validateModel(std::vector<std::size_t> featureSet, Classifier& classifier, std::vector<Instance> instances) {
+	// K-Fold Cross Validation
+	std::size_t success{};
+
+
+	for (std::size_t i{}; i < instances.size(); ++i) {
+		auto save{ instances[i] };
+		eraseFast(instances, i);
+
+		classifier.train(instances);
+		auto tag{ classifier.test(save) };
+		success += (tag == save.getType() ? 1 : 0);
+
+		instances.push_back(std::move(save));
+		std::swap(instances[i], instances.back());
+	}
+
+	const double decimal{static_cast<double>(success) / static_cast<double>(instances.size())};
+	return decimal;
+}
+```
+
