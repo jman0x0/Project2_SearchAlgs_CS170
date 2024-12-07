@@ -31,6 +31,13 @@ float randomEvaluation(const FeatureSet& features) {
 	return dist(generator);
 }
 
+void printFeatures(const std::vector<std::size_t>& features) {
+	for (std::size_t j{}; (j + 1) < features.size(); ++j) {
+		std::cout << features[j] << ',';
+	}
+	std::cout << features.back();
+}
+
 void printFeatures(const FeatureSet& features) {
 	for (std::size_t j{}; (j + 1) < features.size(); ++j) {
 		std::cout << features[j].tag << ',';
@@ -186,12 +193,20 @@ std::vector<Instance> readInstanceFile(const std::string& pathway) {
 int main() {
 	std::cout << "Welcome to Joshua Moreno's Feature Selection Algorithm\n" << std::endl;
 
-	auto instances{ readInstanceFile("large-test-dataset.txt") };
-	std::vector<std::size_t> featureSet{ { 0,14,26 } };
 
-	NearestNeighbor nn{ featureSet };
-	Validator validator;
-	std::cout << "Accuracy: " << validator.validateModel(featureSet, nn, instances);
+	for (auto [features, dataset] : {std::pair{std::vector<std::size_t>{2,4,6}, "small-test-dataset.txt"},
+						  std::pair{ std::vector<std::size_t>{0,14,26}, "large-test-dataset.txt" } }) {
+		std::cout << "Processing:\t" << dataset << '\n';
+		std::cout << "Feature set:\t";
+		printFeatures(features);
+		std::cout << '\n';
+		auto instances{ readInstanceFile(dataset) };
+
+		NearestNeighbor nn{ features };
+		Validator validator;
+		std::cout << "Accuracy: " << validator.validateModel(features, nn, instances) << std::endl;
+	}
+	
 	/*std::size_t features;
 	std::cout << "Please enter the total number of features: ";
 	std::cin >> features;
