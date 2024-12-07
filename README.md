@@ -33,3 +33,23 @@ The _Greedy Forward Selection_ algorithm works by starting with an initially emp
 
 ## Backward Elimination ##
 ![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/backward_trace.png?raw=true)
+
+# Part 2 #
+For **Part 2** of this project I implemented four additional classes ``Classifier``, ``Instance``, ``NearestNeighbor``, and ``Validator``.
+
+The ``Classifier`` class is an abstract class with methods 
+```c++
+virtual void train(const std::vector<Instance>& dataset) = 0;
+virtual Tag test(const Instance& instance) = 0;
+```
+to allow for training and testing of instances.
+
+The ``Instance`` class has the following members
+```c++
+private:
+	Tag type;
+	std::vector<double> features;
+```
+in other words, a previously supervised tag value and a set of continous features.
+Notably, we have a method ``stdNormalize`` to normalize an instance with respect to the population mean and standard deviation.
+
