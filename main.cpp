@@ -5,6 +5,7 @@
 #include <set>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 #include "Instance.h"
 #include "NearestNeighbor.h"
 #include "Validator.h"
@@ -148,14 +149,19 @@ Instance processInstance(const std::string& data) {
 std::vector<Instance> readInstanceFile(const std::string& pathway) {
 	std::vector<Instance> instances;
 	std::ifstream input(pathway, std::ifstream::in);
-
+	auto t1{ std::chrono::high_resolution_clock::now() };
 	std::string line;
 	std::size_t featureCount{};
 	while (std::getline(input, line)) {
 		instances.emplace_back(processInstance(line));
 		featureCount = std::max(featureCount, instances.back().featureCount());
 	}
+	auto t2{ std::chrono::high_resolution_clock::now() };
+	std::cout << "[DATASET]:\t\t";
+		printDuration(t1, t2);
 	/*std::vector<std::pair<double, double>> minmaxes;
+	
+	
 	minmaxes.resize(featureCount, std::pair<double,double>{DBL_MAX, -DBL_MAX});
 	for (auto& instance : instances) {
 		for (std::size_t i{}; i < instance.featureCount(); ++i) {
@@ -166,6 +172,7 @@ std::vector<Instance> readInstanceFile(const std::string& pathway) {
 	for (auto& instance : instances) {
 		instance.normalize(minmaxes);
 	}*/
+	t1 = std::chrono::high_resolution_clock::now();
 	std::vector<std::pair<double, double>> meandevs;
 	meandevs.resize(featureCount);
 	for (auto& instance : instances) {
@@ -187,6 +194,9 @@ std::vector<Instance> readInstanceFile(const std::string& pathway) {
 	for (auto& instance : instances) {
 		instance.stdNormalize(meandevs);
 	}
+	t2 = std::chrono::high_resolution_clock::now();
+	std::cout << "[NORMALIZATION]:\t";
+	printDuration(t1, t2);
 	return instances;
 }
 
@@ -204,7 +214,13 @@ int main() {
 
 		NearestNeighbor nn{ features };
 		Validator validator;
-		std::cout << "Accuracy: " << validator.validateModel(features, nn, instances) << std::endl;
+		auto t1{ std::chrono::high_resolution_clock::now() };
+		const auto accuracy{ validator.validateModel(features, nn, instances) };
+		auto t2{ std::chrono::high_resolution_clock::now() };
+		std::cout << "[VALIDATION]:\t\t";
+		printDuration(t1, t2);
+		std::cout << "Model Accuracy: " << accuracy << '\n' << std::endl;
+
 	}
 	
 	/*std::size_t features;
