@@ -89,3 +89,5 @@ double validateModel(std::vector<std::size_t> featureSet, Classifier& classifier
 }
 ```
 
+## Small and Large Dataset Trace ##
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/cs170_trace_proj2_part2.JPG?raw=true)
