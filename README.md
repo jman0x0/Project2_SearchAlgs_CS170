@@ -208,4 +208,27 @@ Second, technical difficulties involving testing the program and generating trac
 Third, I had technical troubles processing the titanic dataset due to an issue involving carriage returns being used as a newline, so I had to convert and preprocess them before hand which caused a headache. There was also an issue in the performance of my program, which could have benefitted from more optimization. 
 
 ## Trace ##
+### Small Test Dataset ###
 
+#### Greedy Forward Selection ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/forward_selection_small_front.JPG?raw=true)
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/forward_selection_small_end.JPG?raw=true)
+#### Backward Elimination ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/backward_selection_small_front.JPG?raw=true)
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/backward_selection_small_end.JPG?raw=true)
+
+### Large Test Dataset ###
+
+#### Greedy Forward Selection ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/forward_selection_large_front.JPG?raw=true)
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/forward_selection_large_end.JPG?raw=true)
+#### Backward Elimination ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/backward_selection_large_front.JPG?raw=true)
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/backward_selection_large_end.JPG?raw=true)
+
+## Titanic Dataset ###
+
+#### Greedy Forward Selection ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/titanic_clean_forward.JPG?raw=true)
+#### Backward Elimination ####
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/titanic_clean_backward.JPG?raw=true)
