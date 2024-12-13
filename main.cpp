@@ -10,12 +10,7 @@
 #include "NearestNeighbor.h"
 #include "Validator.h"
 
-struct Feature {
-	float accuracy;
-	std::size_t tag;
-};
-
-using FeatureSet = std::vector<Feature>;
+using FeatureSet = std::vector<std::size_t>;
 
 struct Model {
 	FeatureSet features;
@@ -32,21 +27,21 @@ float randomEvaluation(const FeatureSet& features) {
 	return dist(generator);
 }
 
-void printFeatures(const std::vector<std::size_t>& features) {
-	for (std::size_t j{}; (j + 1) < features.size(); ++j) {
-		std::cout << features[j] << ',';
-	}
-	std::cout << features.back();
+float kFoldEvaluation(const FeatureSet& features, const std::vector<Instance>& instances) {
+	Validator validator;
+	NearestNeighbor nn{ features };
+	const auto accuracy{ validator.validateModel(features, nn, instances) };
+	return accuracy;
 }
 
 void printFeatures(const FeatureSet& features) {
 	for (std::size_t j{}; (j + 1) < features.size(); ++j) {
-		std::cout << features[j].tag << ',';
+		std::cout << features[j] + 1 << ',';
 	}
-	std::cout << features.back().tag;
+	std::cout << features.back()+1;
 }
 
-Model greedyForwardSelection(FeatureSet features) {
+Model greedyForwardSelection(FeatureSet features, const std::vector<Instance>& instances) {
 	Model optimal;
 	FeatureSet greedy;
 	greedy.reserve(features.size());
@@ -59,7 +54,7 @@ Model greedyForwardSelection(FeatureSet features) {
 		for (std::size_t i{}; i < features.size(); ++i) {
 			greedy.push_back(features[i]);
 
-			const auto accuracy{ randomEvaluation(greedy) };
+			const auto accuracy{ kFoldEvaluation(greedy, instances) };
 			if (accuracy > bestModel) {
 				bestFeature = i;
 				bestModel = accuracy;
@@ -84,7 +79,7 @@ Model greedyForwardSelection(FeatureSet features) {
 	return optimal;
 }
 
-Model backwardEliminationSearch(FeatureSet features) {
+Model backwardEliminationSearch(FeatureSet features, const std::vector<Instance>& instances) {
 	Model optimal;
 	optimal.features = features;
 	optimal.accuracy = randomEvaluation(optimal.features);
@@ -99,7 +94,7 @@ Model backwardEliminationSearch(FeatureSet features) {
 		auto greedy{ optimal.features };
 		for (std::size_t i{}; i < optimal.features.size(); ++i) {
 			eraseFast(greedy, i);
-			const auto accuracy{ randomEvaluation(greedy) };
+			const auto accuracy{ kFoldEvaluation(greedy, instances) };
 			if (accuracy >= worstAccuracy) {
 				worstAccuracy = accuracy;
 				worstFeature = i;
@@ -128,7 +123,7 @@ FeatureSet getFeatureSet(std::size_t n) {
 	FeatureSet features;
 	features.resize(n);
 	for (std::size_t i{}; i < n; ++i) {
-		features[i] = { randomEvaluation({}), i + 1 };
+		features[i] = { i };
 	}
 	return features;
 }
@@ -203,15 +198,14 @@ std::vector<Instance> readInstanceFile(const std::string& pathway) {
 int main() {
 	std::cout << "Welcome to Joshua Moreno's Feature Selection Algorithm\n" << std::endl;
 
-
-	for (auto [features, dataset] : {std::pair{std::vector<std::size_t>{2,4,6}, "small-test-dataset.txt"},
+	
+	for (auto [features, dataset] : {std::pair{std::vector<std::size_t>{4, 2, 6}, "small-test-dataset.txt"},
 						  std::pair{ std::vector<std::size_t>{0,14,26}, "large-test-dataset.txt" } }) {
 		std::cout << "Processing:\t" << dataset << '\n';
 		std::cout << "Feature set:\t";
 		printFeatures(features);
-		std::cout << '\n';
+		std::cout << "\n============TIMINGS============\n";
 		auto instances{ readInstanceFile(dataset) };
-
 		NearestNeighbor nn{ features };
 		Validator validator;
 		auto t1{ std::chrono::high_resolution_clock::now() };
@@ -219,13 +213,39 @@ int main() {
 		auto t2{ std::chrono::high_resolution_clock::now() };
 		std::cout << "[VALIDATION]:\t\t";
 		printDuration(t1, t2);
+		std::cout << "===============================\n";
 		std::cout << "Model Accuracy: " << accuracy << '\n' << std::endl;
 
 	}
 	
-	/*std::size_t features;
-	std::cout << "Please enter the total number of features: ";
-	std::cin >> features;
+	
+	
+	std::size_t fileChoice;
+	std::cout << "Please enter a file to test:\n";
+	std::cout << "(1) Small Test Dataset\n";
+	std::cout << "(2) Large Test Dataset\n";
+	std::cout << "(3) Titanic Dataset\n";
+	std::cin >> fileChoice;
+	const std::string pathway {
+		[&]() {
+			if (fileChoice == 1) return "small-test-dataset.txt";
+			else if (fileChoice == 2) return "large-test-dataset.txt";
+			else return "titanic_clean.txt";
+		}()
+	};
+	std::cout << "Reading file: " << pathway << '\n';
+	auto instances{ readInstanceFile(pathway) };
+	if (instances.empty()) {
+		std::cout << "Empty dataset, exiting";
+		return EXIT_FAILURE;
+	}
+	if (instances.front().featureCount() == 0) {
+		std::cout << "Empty feature count, exiting";
+		return EXIT_FAILURE;
+	}
+
+	std::cout << "This dataset has " << instances.front().featureCount() << " features with " << instances.size() << " instances\n\n";
+
 
 	std::size_t algorithm;
 	std::cout << "Type the number of the algorithm you want to run:\n";
@@ -234,23 +254,26 @@ int main() {
 	std::cout << "(3) Joshua's Special Algorithm\n";
 	std::cin >> algorithm;
 
+
+	
 	std::cout << std::fixed << std::setprecision(1);
-	std::cout << "\nUsing no features \"random\" evaluation, I get an accuracy of ";
+	std::cout << "\nUsing no features and \"random\" evaluation, I get an accuracy of ";
 	std::cout << randomEvaluation({}) * 100.0 << "%";
 
-
+	auto featureCount{ instances.empty() ? 0 : instances.front().featureCount() };
 	auto optimal{
 		[&]() {
 			if (algorithm == 1) {
-				return greedyForwardSelection(getFeatureSet(features));
+				return greedyForwardSelection(getFeatureSet(featureCount), instances);
 			}
 			else {
-				return backwardEliminationSearch(getFeatureSet(features));
+				return backwardEliminationSearch(getFeatureSet(featureCount), instances);
 			}
 		}()
 	};
 
 	std::cout << "Finished search!! The best feature subset is {";
 	printFeatures(optimal.features);
-	std::cout << "}, which has an accuracy of " << optimal.accuracy * 100.0 << "%" << std::endl;*/
+	std::cout << "}, which has an accuracy of " << optimal.accuracy * 100.0 << "%" << std::endl;
+	
 }

@@ -10,21 +10,21 @@
 class NearestNeighbor : public Classifier
 {
 private:
-	std::vector<Instance> instances;
+	const std::vector<Instance>* instances;
 	std::vector<std::size_t> featureSet;
 public:
-	NearestNeighbor(std::vector<std::size_t> features) {
-		featureSet = features;
+	NearestNeighbor(std::vector<std::size_t> features) 
+	: instances(nullptr), featureSet(features){
 	}
 
 	virtual void train(const std::vector<Instance>& dataset) override {
-		instances = dataset;
+		instances = &dataset;
 	}
 	virtual Tag test(const Instance& instance) override {
 		double minDistance{ DBL_MAX };
-		Instance* minInstance{ nullptr };
+		const Instance* minInstance{ nullptr };
 
-		for (auto& trained : instances) {
+		for (auto& trained : *instances) {
 			const auto distance{ euclideanDistance(instance, trained) };
 
 			if (distance < minDistance) {
@@ -41,7 +41,7 @@ private:
 		for (auto& idx : featureSet) {
 			sqsum += pow(a.getFeature(idx) - b.getFeature(idx), 2.0);
 		}
-		return std::sqrt(sqsum);
+		return sqsum;
 	}
 };
 

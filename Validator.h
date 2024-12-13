@@ -4,11 +4,18 @@
 #define VALIDATOR_H
 
 #include "Classifier.h"
+#include <iostream>
+#include <chrono>
 
 template<typename T>
 void eraseFast(T& container, std::size_t idx) {
 	std::swap(container[idx], container.back());
 	container.pop_back();
+}
+
+template<typename T>
+void printDuration(T t1, T t2) {
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count() << "ms\n";
 }
 
 class Validator
