@@ -210,6 +210,13 @@ Titatnic Dataset: Features {2} -> 78.0% Accuracy
 
 Likewise, I also found that it generated more promising results sooner than backward elimination which often took a very long time to reach an optimal solution. It was also a simpler and more intuitive algorithm to implement as adding features and testing was simpler. In theory, backward elimination tends to find better solutions, but in all these cases I didn't find that to ever be the case.
 
+## Feature Plots ##
+For the small dataset, I found that the features 3 and 5 had the greatest and most positive impact on accuracy.
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/small_f3_f5.JPG?raw=true)
+
+For the large dataset, I found that the features 1 and 27 had the best impact.
+![alt text](https://github.com/jman0x0/Project2_SearchAlgs_CS170/blob/main/large_f1_f27.JPG?raw=true)
+
 ## Challenges ##
 There were many challenges for this project:
 
