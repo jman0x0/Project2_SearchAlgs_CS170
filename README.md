@@ -165,10 +165,10 @@ double validateModel(std::vector<std::size_t> featureSet, Classifier& classifier
 Lastly, I developed a UI to process three specific datasets: _small-test-dataset.txt, large-test-dataset.txt, titanic-clean.txt_.
 Then, I allowed the user to selection between either Greedy Forward Selection Search or Backward Elimination Search. Unfortunately, I didn't implement a custom/better algorithm, so those are the only two options.
 
-## Challenges ##
-There were many challenges for this project:
+## Normalization ##
+A more technical part of the design and overall program was the normalization process. At first I chose to use **Min-Max Normalization**, but I quickly noticed there was discrepancy in my results and the expected output. This is attributed to the fact that this form of normalization doesn't handle outliers well. Additionally features/data sets that have differing distributions can negatively impact the accuracy of our validation and nearest neighbor approach.
 
-First, there were programming difficulties implementing all the necessary components such as the search algorithms, validator, nearest neighbor algorithm. In particular, the nearest neighbor algorithm was the most troubling, not because of the euclidean distance metric, but rather the normalization process. I had to devise of means of grouping and processing features together such that they could all be properly normalized. The Z-Score normalization was chosen and so I had to compute both the mean and standard deviation, the code belows illustrates the procedure:
+The normalization method I settled upon was **Z-Score Normalization** which is a more robust approach. To accomplish this I had to compute the mean and standard deviation for each feature separately. Then, I created a method for each instance to allow for normalization, e.g., ``stdNormalize`` whereby I passed in a vector containing means and deviations. Then I used the formula: ``fn = (f - mean) / stddev`` where ``fn`` is the normalized feature and ``f`` is the feature before normalization.
 ```c++
 std::vector<std::pair<double, double>> meandevs;
 meandevs.resize(featureCount);
@@ -192,6 +192,14 @@ for (auto& instance : instances) {
 	instance.stdNormalize(meandevs);
 }
 ```
+## Algorithm Comparison ##
+
+## Challenges ##
+There were many challenges for this project:
+
+First, there were programming difficulties implementing all the necessary components such as the search algorithms, validator, nearest neighbor algorithm. In particular, the nearest neighbor algorithm was the most troubling, not because of the euclidean distance metric, but rather the normalization process. I had to devise of means of grouping and processing features together such that they could all be properly normalized. The Z-Score normalization was chosen and so I had to compute both the mean and standard deviation.
+
+## Trace ##
 
 Second, technical difficulties involving testing the program and generating trace reports were troublesome and time consuming. In particular, I noticed that the backward elimination search took a very long to complete for both the large dataset and the titanic dataset. This made testing difficult since when a bug was found I had to redo the entire process of testing the algorithm. Likewise, it was difficult to determine if the algorithms were implemented correctly and if they were generating the correct answer in general. 
 
