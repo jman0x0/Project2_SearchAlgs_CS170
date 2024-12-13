@@ -82,17 +82,18 @@ Model greedyForwardSelection(FeatureSet features, const std::vector<Instance>& i
 Model backwardEliminationSearch(FeatureSet features, const std::vector<Instance>& instances) {
 	Model optimal;
 	optimal.features = features;
-	optimal.accuracy = randomEvaluation(optimal.features);
+	optimal.accuracy = kFoldEvaluation(optimal.features, instances);
+	Model active{ optimal };
 
 	std::cout << "\nStarting accuracy with features {";
 	printFeatures(features);
 	std::cout << "} has accuracy " << optimal.accuracy * 100.0 << "%\n";
 
-	while (optimal.features.size() > 1) {
-		float worstAccuracy{ optimal.accuracy };
+	while (active.features.size() > 1) {
+		float worstAccuracy{ -FLT_MAX };
 		std::size_t worstFeature{ std::numeric_limits<std::size_t>::max() };
-		auto greedy{ optimal.features };
-		for (std::size_t i{}; i < optimal.features.size(); ++i) {
+		auto greedy{ active.features };
+		for (std::size_t i{}; i < active.features.size(); ++i) {
 			eraseFast(greedy, i);
 			const auto accuracy{ kFoldEvaluation(greedy, instances) };
 			if (accuracy >= worstAccuracy) {
@@ -102,7 +103,7 @@ Model backwardEliminationSearch(FeatureSet features, const std::vector<Instance>
 			std::cout << "\tUsing features(s){";
 			printFeatures(greedy);
 			std::cout << "} accuracy is " << accuracy * 100.0 << "\%\n";
-			greedy.push_back(optimal.features[i]);
+			greedy.push_back(active.features[i]);
 			std::swap(greedy[i], greedy.back());
 		}
 		// Erasing any feature is a bad decision, quit...
@@ -110,11 +111,15 @@ Model backwardEliminationSearch(FeatureSet features, const std::vector<Instance>
 			std::cout << "No improvement is made removing a feature...\n\n";
 			break;
 		}
-		eraseFast(optimal.features, worstFeature);
-		optimal.accuracy = worstAccuracy;
+		eraseFast(active.features, worstFeature);
+		active.accuracy = worstAccuracy;
+
+		if (worstAccuracy >= optimal.accuracy) {
+			optimal = active;
+		}
 		std::cout << "Feature set {";
-		printFeatures(optimal.features);
-		std::cout << "} was best, accuracy is " << optimal.accuracy * 100.0 << "%\n\n";
+		printFeatures(active.features);
+		std::cout << "} was best, accuracy is " << active.accuracy * 100.0 << "%\n\n";
 	}
 	return optimal;
 }
@@ -275,5 +280,7 @@ int main() {
 	std::cout << "Finished search!! The best feature subset is {";
 	printFeatures(optimal.features);
 	std::cout << "}, which has an accuracy of " << optimal.accuracy * 100.0 << "%" << std::endl;
-	
+	std::cin >> fileChoice;
+	std::cin >> algorithm;
+	system("pause");
 }
