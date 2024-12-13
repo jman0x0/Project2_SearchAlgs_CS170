@@ -195,7 +195,20 @@ for (auto& instance : instances) {
 
 Normalization was crucial as without normalization my nearest neighbor classifier was finding much worse results as the distance metric was being heavily skewed by larger values. Fortunately, it also made the results of my program correspond with the expected output.
 ## Algorithm Comparison ##
-I found the Greedy Forward Selection Search algorithm to be a better algorithm 
+I found the Greedy Forward Selection Search algorithm to be a better algorithm in comparison to Backward Elimination Search.
+
+### Data ###
+**Greedy Foward Selection**
+Small Dataset: Features {5,3} -> 92.0% Accuracy
+Large Dataset: Features {27, 1} -> 95.5% Accuracy
+Titatnic Dataset: Features {2} -> 78.0% Accuracy
+
+**Backward Elimination**
+Small Dataset: Features {7,2,10,4,5} -> 82.0% Accuracy
+Large Dataset: Features {27} -> 84.7% Accuracy
+Titatnic Dataset: Features {2} -> 78.0% Accuracy
+
+Likewise, I also found that it generated more promising results sooner than backward elimination which often took a very long time to reach an optimal solution. It was also a simpler and more intuitive algorithm to implement as adding features and testing was simpler. In theory, backward elimination tends to find better solutions, but in all these cases I didn't find that to ever be the case.
 
 ## Challenges ##
 There were many challenges for this project:
