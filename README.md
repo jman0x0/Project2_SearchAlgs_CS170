@@ -192,17 +192,20 @@ for (auto& instance : instances) {
 	instance.stdNormalize(meandevs);
 }
 ```
+
+Normalization was crucial as without normalization my nearest neighbor classifier was finding much worse results as the distance metric was being heavily skewed by larger values. Fortunately, it also made the results of my program correspond with the expected output.
 ## Algorithm Comparison ##
+I found the Greedy Forward Selection Search algorithm to be a better algorithm 
 
 ## Challenges ##
 There were many challenges for this project:
 
 First, there were programming difficulties implementing all the necessary components such as the search algorithms, validator, nearest neighbor algorithm. In particular, the nearest neighbor algorithm was the most troubling, not because of the euclidean distance metric, but rather the normalization process. I had to devise of means of grouping and processing features together such that they could all be properly normalized. The Z-Score normalization was chosen and so I had to compute both the mean and standard deviation.
 
-## Trace ##
-
 Second, technical difficulties involving testing the program and generating trace reports were troublesome and time consuming. In particular, I noticed that the backward elimination search took a very long to complete for both the large dataset and the titanic dataset. This made testing difficult since when a bug was found I had to redo the entire process of testing the algorithm. Likewise, it was difficult to determine if the algorithms were implemented correctly and if they were generating the correct answer in general. 
 
 
 Third, I had technical troubles processing the titanic dataset due to an issue involving carriage returns being used as a newline, so I had to convert and preprocess them before hand which caused a headache. There was also an issue in the performance of my program, which could have benefitted from more optimization. 
+
+## Trace ##
 
